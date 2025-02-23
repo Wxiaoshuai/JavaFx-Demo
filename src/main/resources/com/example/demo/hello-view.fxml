@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="BASELINE_LEFT" minHeight="520.0" minWidth="860.0" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.demo.HelloController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+
+    <HBox>
+        <Button mnemonicParsing="false" onAction="#onChooseFile" text="选择文件" textOverrun="CLIP">
+         <cursor>
+            <Cursor fx:constant="DEFAULT" />
+         </cursor></Button>
+        <Label fx:id="fileName1" prefHeight="0.0" prefWidth="400.0" text="请先选择文件">
+            <opaqueInsets>
+                <Insets />
+            </opaqueInsets>
+         <HBox.margin>
+            <Insets left="20.0" top="4.0" />
+         </HBox.margin>
+        </Label>
+    </HBox>
+    <HBox>
+       <TableView fx:id="tableView1" HBox.hgrow="ALWAYS">
+         <columns>
+             <TableColumn fx:id="selectColumn" text="选择" />
+             <TableColumn fx:id="columnCode" prefWidth="120.0" text="产品编号" />
+             <TableColumn fx:id="columnCategory" prefWidth="100.0" text="产品类别" />
+             <TableColumn fx:id="columnName" prefWidth="110.0" text="产品名称" />
+             <TableColumn fx:id="columnOwner" prefWidth="80.0" text="商标权人" />
+             <TableColumn fx:id="columnConclusion1" prefWidth="200.0" text="审查结论" />
+             <TableColumn fx:id="columnConclusion4" prefWidth="100.0" text="审查时间" />
+         </columns>
+       </TableView>
+    </HBox>
+
+    <HBox alignment="CENTER">
+      <Label fx:id="label1" text="请先选择文件夹...">
+         <HBox.margin>
+            <Insets right="10.0" />
+         </HBox.margin>
+      </Label>
+        <Button alignment="CENTER" contentDisplay="CENTER" onAction="#onHelloButtonClick" text="选择保存的文件夹">
+         <HBox.margin>
+            <Insets right="10.0" />
+         </HBox.margin></Button>
+        <Button contentDisplay="CENTER" onAction="#onHelloButtonClick3" text="开始生成Word文件">
+         <HBox.margin>
+            <Insets left="10.0" />
+         </HBox.margin></Button>
+      <Label fx:id="label2" text="">
+         <HBox.margin>
+            <Insets left="10.0" />
+         </HBox.margin>
+      </Label>
+    </HBox>
+   <cursor>
+      <Cursor fx:constant="DEFAULT" />
+   </cursor>
+</VBox>
