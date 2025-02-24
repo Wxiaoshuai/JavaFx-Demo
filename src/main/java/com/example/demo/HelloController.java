@@ -1,7 +1,5 @@
 package com.example.demo;
 
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -13,6 +11,7 @@ import javafx.stage.FileChooser;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.util.StringUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xwpf.usermodel.*;
 
@@ -24,10 +23,7 @@ import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.prefs.Preferences;
-
-import javafx.scene.control.CheckBox;
 
 public class HelloController {
     @FXML
@@ -36,6 +32,16 @@ public class HelloController {
     private Label label1;
     @FXML
     private Label label2;
+    @FXML
+    private TextField signature1;
+    @FXML
+    private TextField signature2;
+    @FXML
+    private Button selectButton;
+    @FXML
+    private Button createButton1;
+    @FXML
+    private Button createButton2;
 
     @FXML
     private TableView<FileInfoEntity> tableView1;
@@ -70,7 +76,6 @@ public class HelloController {
 
             try {
                 String filePath = file1.getName();
-                fileName1.setText(file1.getPath());
 
                 // 读取 Excel 文件
                 FileInputStream file = new FileInputStream(file1);
@@ -82,8 +87,10 @@ public class HelloController {
                 } else if (filePath.endsWith(".xls")) {
                     workbook = new HSSFWorkbook(file); // .xls 文件
                 } else {
+                    fileName1.setText("不支持的文件格式!");
                     throw new IllegalArgumentException("不支持的文件格式");
                 }
+                fileName1.setText(file1.getPath());
 
                 // 获取第一个工作表
                 Sheet sheet = workbook.getSheetAt(0);
@@ -104,39 +111,32 @@ public class HelloController {
                         switch (cell.getCellType()) {
                             case STRING:
                                 fileInfo.setFileInfo(columnIndex, cell.getStringCellValue());
-                                System.out.print(cell.getStringCellValue() + "\t");
                                 break;
                             case NUMERIC:
                                 if (DateUtil.isCellDateFormatted(cell)) {
                                     Date date = cell.getDateCellValue();
                                     String formatDate = formatDate(date);
                                     fileInfo.setFileInfo(columnIndex, formatDate);
-                                    System.out.print(formatDate + "\t");
                                 } else {
                                     double numericCellValue = cell.getNumericCellValue();
                                     if (columnIndex > 5) {
                                         String formatDate = formatDate(DateUtil.getJavaDate(numericCellValue));
                                         fileInfo.setFileInfo(columnIndex, formatDate);
-                                        System.out.print(formatDate + "\t");
                                     } else {
                                         fileInfo.setFileInfo(columnIndex, String.valueOf(cell.getNumericCellValue()));
-                                        System.out.print(cell.getNumericCellValue() + "\t");
                                     }
                                 }
                                 break;
                             case BOOLEAN:
                                 fileInfo.setFileInfo(columnIndex, String.valueOf(cell.getBooleanCellValue()));
-                                System.out.print(cell.getBooleanCellValue() + "\t");
                                 break;
                             case FORMULA:
                                 fileInfo.setFileInfo(columnIndex, cell.getCellFormula());
-                                System.out.print(cell.getCellFormula() + "\t");
                                 break;
                             default:
-                                System.out.print("UNKNOWN\t");
+                                break;
                         }
                     }
-                    System.out.println(); // 换行
                     fileInfoEntityList.add(fileInfo);
                 }
 
@@ -176,18 +176,24 @@ public class HelloController {
             label2.setText("请先选择文件夹...");
             return;
         }
+        if (StringUtil.isBlank(signature1.getText()) || StringUtil.isBlank(signature2.getText())) {
+            label2.setText("请先输入落款信息...");
+            return;
+        }
 
         label2.setText("正在生成...");
+        changeButton(true);
+
         // 获取选中的行
         boolean success = false;
         for (FileInfoEntity fileInfo : tableView1.getItems()) {
             if (fileInfo.isSelected()) {
-                System.out.println("选中: " + fileInfo.getCode() + " " + fileInfo.getName());
                 createWordFile(fileInfo);
                 success = true;
             }
         }
 
+        changeButton(false);
         if (success) {
             label2.setText("生成成功！");
         } else {
@@ -195,14 +201,23 @@ public class HelloController {
         }
     }
 
+    private void changeButton(Boolean b) {
+        selectButton.setDisable(b);
+        createButton1.setDisable(b);
+        createButton2.setDisable(b);
+    }
+
     private void createWordFile(FileInfoEntity fileInfo) {
         String absolutePath = new File("").getAbsolutePath();
         // 模板文件路径
-        String templatePath = absolutePath + "/file/备案审查结论-模板.docx";
+        String templatePath = absolutePath + "/src/main/resources/file/备案审查结论-模板.docx";
         // 输出文件路径
         String outputPath = label1.getText() + "/" + fileInfo.getCode() + ".docx";
 
         try {
+            fileInfo.setConclusion2(signature1.getText());
+            fileInfo.setConclusion3(signature2.getText());
+
             // 读取模板文件
             FileInputStream fis = new FileInputStream(templatePath);
             XWPFDocument document = new XWPFDocument(fis);
@@ -227,8 +242,6 @@ public class HelloController {
             fos.close();
             document.close();
             fis.close();
-
-            System.out.println("Word 文件生成成功：" + outputPath);
         } catch (Exception e) {
             label2.setText("生成失败！");
             e.printStackTrace();
@@ -254,6 +267,9 @@ public class HelloController {
             for (XWPFRun run : runs) {
                 String text = run.getText(0);
                 if (text != null) {
+                    if (text.contains("conclusion2") || text.contains("conclusion3") || text.contains("conclusion4")) {
+                        run.setBold(true);
+                    }
                     // 替换占位符
                     for (Field declaredField : fileInfo.getClass().getDeclaredFields()) {
                         declaredField.setAccessible(true);
