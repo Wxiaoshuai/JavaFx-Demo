@@ -154,6 +154,7 @@ public class HelloController {
             fileName1.setText("文件不存在，请重新选择！");
         }
     }
+
     @FXML
     protected void onHelloButtonClick() throws IOException {
         Preferences preferences = Preferences.userNodeForPackage(HelloController.class);
@@ -210,7 +211,7 @@ public class HelloController {
     private void createWordFile(FileInfoEntity fileInfo) {
         String absolutePath = new File("").getAbsolutePath();
         // 模板文件路径
-        String templatePath = absolutePath + "/src/main/resources/file/备案审查结论-模板.docx";
+        String templatePath = absolutePath + "/template/备案审查结论-模板.docx";
         // 输出文件路径
         String outputPath = label1.getText() + "/" + fileInfo.getCode() + ".docx";
 
@@ -247,6 +248,7 @@ public class HelloController {
             e.printStackTrace();
         }
     }
+
     /**
      * 替换 Word 文档中的占位符
      */
@@ -259,7 +261,6 @@ public class HelloController {
 
     /**
      * 替换段落中的占位符
-     *
      */
     private static void replaceTextInParagraph(XWPFParagraph paragraph, FileInfoEntity fileInfo) throws IllegalAccessException {
         List<XWPFRun> runs = paragraph.getRuns();
@@ -267,6 +268,9 @@ public class HelloController {
             for (XWPFRun run : runs) {
                 String text = run.getText(0);
                 if (text != null) {
+                    if (text.contains("code")) {
+//                        run.setComplexScriptItalic();
+                    }
                     if (text.contains("conclusion2") || text.contains("conclusion3") || text.contains("conclusion4")) {
                         run.setBold(true);
                     }
